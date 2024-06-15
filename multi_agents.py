@@ -120,7 +120,7 @@ class MinmaxAgent(MultiAgentSearchAgent):
         """*** YOUR CODE HERE ***"""
         # util.raiseNotDefined()
         # Initialize the best value and best action
-        best_value = -float('inf')
+        best_value = -np.inf
         best_action = None
 
         # Get all legal actions for the agent (agent_index=0)
@@ -144,7 +144,7 @@ class MinmaxAgent(MultiAgentSearchAgent):
         if depth == 0:
             return self.evaluation_function(state)
         if maximizing_player:
-            value = -1
+            value = -np.inf
             legal_moves = state.get_agent_legal_actions()
             for action in legal_moves:
                 successor = state.generate_successor(agent_index=0, action=action)
@@ -172,9 +172,50 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         Returns the minimax action using self.depth and self.evaluationFunction
         """
-        """*** YOUR CODE HERE ***"""
-        util.raiseNotDefined()
+        best_value = -np.inf
+        best_action = None
 
+        # Get all legal actions for the agent (agent_index=0)
+        legal_actions = game_state.get_legal_actions(agent_index=0)
+
+        for action in legal_actions:
+            # Generate the successor game state for each action
+            successor = game_state.generate_successor(agent_index=0, action=action)
+
+            # Evaluate the successor state using the minimax function
+            value = self.alphaBeta(successor, self.depth,-np.inf, np.inf, maximizing_player=False)
+
+            # Update the best action if a better value is found
+            if value > best_value:
+                best_value = value
+                best_action = action
+
+        return best_action
+
+    def alphaBeta(self, state, depth, alpha, beta, maximizing_player):
+        if depth == 0:
+            return self.evaluation_function(state)
+        if maximizing_player:
+            value = -1
+            legal_moves = state.get_agent_legal_actions()
+            for action in legal_moves:
+                successor = state.generate_successor(agent_index=0, action=action)
+                value = max(value, self.alphaBeta(successor, depth, alpha, beta, False))
+                alpha = max(alpha, value)
+                if value >= beta:
+                    break
+            return value
+        # minimizing player
+        else:
+            value = np.inf
+            legal_moves = state.get_opponent_legal_actions()
+            for action in legal_moves:
+                successor = state.generate_successor(agent_index=1, action=action)
+                value = min(value, self.alphaBeta(successor, depth - 1, alpha, beta, True))
+                beta = min(beta, value)
+                if value <= alpha:
+                    break
+            return value
 
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
@@ -189,9 +230,41 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         The opponent should be modeled as choosing uniformly at random from their
         legal moves.
         """
-        """*** YOUR CODE HERE ***"""
-        util.raiseNotDefined()
+        best_value = -np.inf
+        best_action = None
 
+        # Get all legal actions for the agent (agent_index=0)
+        legal_actions = game_state.get_legal_actions(agent_index=0)
+
+        for action in legal_actions:
+            # Generate the successor game state for each action
+            successor = game_state.generate_successor(agent_index=0, action=action)
+
+            # Evaluate the successor state using the minimax function
+            value = self.expectiMax(successor, self.depth,-np.inf, np.inf, maximizing_player=False)
+
+            # Update the best action if a better value is found
+            if value > best_value:
+                best_value = value
+                best_action = action
+
+        return best_action
+
+    def expectiMax(self, state, depth, maximizing_player):
+        if depth == 0:
+            return self.evaluation_function(state)
+        if maximizing_player:
+            value = -np.inf
+            legal_moves = state.get_agent_legal_actions()
+            for action in legal_moves:
+                successor = state.generate_successor(agent_index=0, action=action)
+                value = max(value, self.expectiMax(successor, depth, False))
+            return value
+        # minimizing player
+        else:
+            legal_moves = state.get_opponent_legal_actions()
+            scores = [self.expectiMax(state.generate_successor(agent_index=1, action=action), depth - 1, True) for action in legal_moves]
+            return np.mean(scores)
 
 
 
