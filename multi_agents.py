@@ -118,7 +118,48 @@ class MinmaxAgent(MultiAgentSearchAgent):
             Returns the successor game state after an agent takes an action
         """
         """*** YOUR CODE HERE ***"""
-        util.raiseNotDefined()
+        # util.raiseNotDefined()
+        # Initialize the best value and best action
+        best_value = -float('inf')
+        best_action = None
+
+        # Get all legal actions for the agent (agent_index=0)
+        legal_actions = game_state.get_legal_actions(agent_index=0)
+
+        for action in legal_actions:
+            # Generate the successor game state for each action
+            successor = game_state.generate_successor(agent_index=0, action=action)
+
+            # Evaluate the successor state using the minimax function
+            value = self.minmax(successor, self.depth, maximizing_player=False)
+
+            # Update the best action if a better value is found
+            if value > best_value:
+                best_value = value
+                best_action = action
+
+        return best_action
+
+    def minmax(self, state, depth, maximizing_player):
+        if depth == 0:
+            return self.evaluation_function(state)
+        if maximizing_player:
+            value = -1
+            legal_moves = state.get_agent_legal_actions()
+            for action in legal_moves:
+                successor = state.generate_successor(agent_index=0, action=action)
+                value = max(value, self.minmax(successor, depth, False))
+            return value
+        # minimizing player
+        else:
+            value = np.inf
+            legal_moves = state.get_opponent_legal_actions()
+            for action in legal_moves:
+                successor = state.generate_successor(agent_index=1, action=action)
+                value = min(value, self.minmax(successor, depth - 1, True))
+            return value
+
+
 
 
 
