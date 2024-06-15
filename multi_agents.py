@@ -278,7 +278,21 @@ def better_evaluation_function(current_game_state):
     DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # Define the weight matrix
+    weight_matrix = np.array([
+        [1000, 300, 100, 100],
+        [10, 10, 10, 10],
+        [1, 1, 1, 1],
+        [1, 1, 1, 1]
+    ])
+
+    # Get the current board
+    board = current_game_state.board
+
+    # Calculate the weighted sum
+    weighted_sum = np.sum(board * weight_matrix)
+
+    return weighted_sum
 
 
 # Abbreviation
