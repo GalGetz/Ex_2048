@@ -53,13 +53,15 @@ class ReflexAgent(Agent):
         score = successor_game_state.score
 
         "*** YOUR CODE HERE ***"
-        successor_1_game_state = successor_game_state.generate_successor(agent_index=1)
+        legal_agent_actions = successor_game_state.get_opponent_legal_actions()
+        successor_1_game_state = successor_game_state.generate_successor(agent_index=1, action=legal_agent_actions[0])
         # Collect legal moves and successor states
         legal_moves = successor_1_game_state.get_agent_legal_actions()
         # Choose one of the best actions
         scores = [successor_1_game_state.generate_successor(action=action).score for action in legal_moves]
-        best_score = max(scores)
-        return best_score
+        if scores:
+            return max(scores)
+        return -1
 
 
 def score_evaluation_function(current_game_state):
