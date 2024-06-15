@@ -241,7 +241,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
             successor = game_state.generate_successor(agent_index=0, action=action)
 
             # Evaluate the successor state using the minimax function
-            value = self.expectiMax(successor, self.depth,-np.inf, np.inf, maximizing_player=False)
+            value = self.expectiMax(successor, self.depth, maximizing_player=False)
 
             # Update the best action if a better value is found
             if value > best_value:
@@ -264,7 +264,9 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         else:
             legal_moves = state.get_opponent_legal_actions()
             scores = [self.expectiMax(state.generate_successor(agent_index=1, action=action), depth - 1, True) for action in legal_moves]
-            return np.mean(scores)
+            if scores:
+                return np.mean(scores)
+            return -np.inf
 
 
 
