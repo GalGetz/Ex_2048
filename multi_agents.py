@@ -231,10 +231,10 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         best_value = -np.inf
-        best_action = None
 
         # Get all legal actions for the agent (agent_index=0)
         legal_actions = game_state.get_legal_actions(agent_index=0)
+        best_action = legal_actions[0]
 
         for action in legal_actions:
             # Generate the successor game state for each action
@@ -277,22 +277,72 @@ def better_evaluation_function(current_game_state):
 
     DESCRIPTION: <write something here so we know what you did>
     """
-    "*** YOUR CODE HERE ***"
     # Define the weight matrix
     weight_matrix = np.array([
-        [1000, 300, 100, 100],
-        [10, 10, 10, 10],
-        [1, 1, 1, 1],
-        [1, 1, 1, 1]
+        [1000, 80, 30, 20],
+        [10, 5, 4, 3],
+        [1, 1, 0.1, 0.1],
+        [1, 0.1, 0.03, 0.01]
     ])
 
+    if current_game_state.max_tile >= 1024:
+        weight_matrix = np.array([
+            [1000, 80, 50, 50],
+            [3, 3, 4, 10],
+            [1, 1, 5, 5],
+            [1, 0.1, 1, 1]
+        ])
     # Get the current board
     board = current_game_state.board
 
     # Calculate the weighted sum
     weighted_sum = np.sum(board * weight_matrix)
+    penalty_max = 0
+    if board[0][0] != current_game_state.max_tile:
+        penalty_max = -100 * current_game_state.max_tile ** 2
 
-    return weighted_sum
+    if current_game_state.max_tile >= 512 :
+        for i in range(board.shape[0]):
+            for j in range(board.shape[1]):
+                if board[i, j] == 0:
+                    penalty_max += 150
+
+    second_high = np.partition(board.flatten(), -2)[-2]
+    if board[0][1] != second_high:
+        penalty_max += -20 * second_high ** 2
+
+    # Smoothness penalty (adjacent tiles with similar values are better)
+    smoothness_penalty = 0
+    for i in range(board.shape[0]):
+        for j in range(board.shape[1] - 1):
+            if board[i, j] == 0 or board[i, j + 1] == 0:
+                continue
+            smoothness_penalty -= abs(board[i, j] - board[i, j + 1])
+    # for j in range(board.shape[0]):
+    #     for i in range(board.shape[1] - 1):
+    #         if board[i, j] == 0 or board[i + 1, j] == 0:
+    #             continue
+    #         smoothness_penalty -= abs(board[i, j] - board[i + 1, j])
+
+    monotonicity_penalty = 0
+    for i in range(board.shape[0]):
+        for j in range(board.shape[1] - 1):
+            if board[i, j] == 0 or board[i, j + 1] == 0:
+                continue
+            if board[i, j] < board[i, j + 1]:
+                monotonicity_penalty -= (board[i, j + 1] - board[i, j])
+
+    for j in range(board.shape[0]):
+        for i in range(board.shape[1] - 1):
+            if board[i + 1, j] == 0 or board[i, j] == 0:
+                continue
+            if board[i, j] < board[i + 1, j]:
+                monotonicity_penalty -= (board[i + 1, j] - board[i, j])
+
+    # Combine all factors into the final score
+    score = weighted_sum + smoothness_penalty + monotonicity_penalty + penalty_max + current_game_state.score
+
+    return score
 
 
 # Abbreviation
